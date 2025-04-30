@@ -26,11 +26,14 @@ contract DeployUniswap is Script {
 
         // Deploy Test Tokens
         TestToken tokenA = new TestToken("Token A", "TKNA", 1_000_000);
+        tokenA.mint(msg.sender, 1_000);
         console.log("Token A deployed at:", address(tokenA));
+        console.log("Token A balance:", tokenA.balanceOf(msg.sender));
 
         TestToken tokenB = new TestToken("Token B", "TKNB", 1_000_000);
+        tokenB.mint(msg.sender, 1_000);
         console.log("Token B deployed at:", address(tokenB));
-
+        console.log("Token B balance:", tokenB.balanceOf(msg.sender));
         // Create initial pair and add liquidity
         tokenA.approve(address(router), type(uint).max);
         tokenB.approve(address(router), type(uint).max);

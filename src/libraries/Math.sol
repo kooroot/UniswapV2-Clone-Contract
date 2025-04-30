@@ -12,8 +12,6 @@ library Math {
 
     // babylonian method (https://en.wikipedia.org/wiki/Methods_of_computing_square_roots#Babylonian_method)
     function sqrt(uint y) internal pure returns (uint z) {
-        console.log("sqrt input:", y);
-        
         if (y > 3) {
             z = y;
             uint x = y / 2 + 1;
@@ -24,8 +22,5 @@ library Math {
         } else if (y != 0) {
             z = 1;
         }
-        
-        console.log("sqrt output:", z);
-        return z;
     }
 }
