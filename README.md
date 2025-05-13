@@ -51,13 +51,23 @@ This will start a local Ethereum node at http://localhost:8545 with 10 test acco
 
 ### Deploy to Local Chain
 
+Before deploying, make sure to update the test wallet address in `script/DeployUniswap.s.sol`:
+
+```solidity
+address testaddr = 0xa2AbF7779EA7Dd5087af63AA02982CD9167a9D8A; // Change this to your test wallet address
+```
+
 To deploy the Uniswap contracts to your local chain:
 
 ```shell
 $ forge script script/DeployUniswap.s.sol --broadcast --rpc-url http://localhost:8545
 ```
 
-This will deploy the contracts to your local chain and broadcast the transactions.
+This will deploy the contracts to your local chain and broadcast the transactions. The script will:
+- Deploy WETH, Factory, and Router contracts
+- Deploy test tokens (Token A and Token B)
+- Create initial liquidity pools
+- Transfer test tokens and ETH to the specified test wallet address
 
 ### Cast
 
