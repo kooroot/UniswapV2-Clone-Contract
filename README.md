@@ -39,17 +39,25 @@ $ forge fmt
 $ forge snapshot
 ```
 
-### Anvil
+### Run Local Chain
+
+To run a local Ethereum chain for testing:
 
 ```shell
 $ anvil
 ```
 
-### Deploy
+This will start a local Ethereum node at http://localhost:8545 with 10 test accounts, each funded with 10000 ETH.
+
+### Deploy to Local Chain
+
+To deploy the Uniswap contracts to your local chain:
 
 ```shell
-$ forge script script/Counter.s.sol:CounterScript --rpc-url <your_rpc_url> --private-key <your_private_key>
+$ forge script script/DeployUniswap.s.sol --broadcast --rpc-url http://localhost:8545
 ```
+
+This will deploy the contracts to your local chain and broadcast the transactions.
 
 ### Cast
 
