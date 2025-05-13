@@ -79,7 +79,7 @@ contract UniswapV2Router {
         liquidity = IUniswapV2Pair(pair).mint(to);
     }
 
-    function addLiquidityETH(
+    function addLiquidityWETH(
         address token,
         uint amountTokenDesired,
         uint amountTokenMin,
@@ -143,7 +143,7 @@ contract UniswapV2Router {
         console.log("Final amounts - A:", amountA, "B:", amountB);
     }
 
-    function removeLiquidityETH(
+    function removeLiquidityWETH(
         address token,
         uint liquidity,
         uint amountTokenMin,
@@ -232,7 +232,7 @@ contract UniswapV2Router {
         _swap(amounts, path, to);
     }
     
-    function swapExactETHForTokens(uint amountOutMin, address[] calldata path, address to, uint deadline)
+    function swapExactWETHForTokens(uint amountOutMin, address[] calldata path, address to, uint deadline)
         external
         virtual
         payable
@@ -252,7 +252,7 @@ contract UniswapV2Router {
         _swap(amounts, path, to);
     }
     
-    function swapTokensForExactETH(uint amountOut, uint amountInMax, address[] calldata path, address to, uint deadline)
+    function swapTokensForExactWETH(uint amountOut, uint amountInMax, address[] calldata path, address to, uint deadline)
         external
         virtual
         ensure(deadline)
@@ -269,7 +269,7 @@ contract UniswapV2Router {
         Address.sendValue(payable(to), amounts[amounts.length - 1]);
     }
     
-    function swapExactTokensForETH(uint amountIn, uint amountOutMin, address[] calldata path, address to, uint deadline)
+    function swapExactTokensForWETH(uint amountIn, uint amountOutMin, address[] calldata path, address to, uint deadline)
         external
         virtual
         ensure(deadline)
@@ -286,7 +286,7 @@ contract UniswapV2Router {
         Address.sendValue(payable(to), amounts[amounts.length - 1]);
     }
     
-    function swapETHForExactTokens(uint amountOut, address[] calldata path, address to, uint deadline)
+    function swapWETHForExactTokens(uint amountOut, address[] calldata path, address to, uint deadline)
         external
         virtual
         payable
