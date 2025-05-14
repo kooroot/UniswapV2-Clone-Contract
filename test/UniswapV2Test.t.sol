@@ -173,7 +173,7 @@ contract UniswapV2Test is Test {
         console.log("Token A approved for router");
         
         // 2. 라우터를 통해 ETH 유동성 추가
-        (uint amountToken, uint amountETH, uint liquidity) = router.addLiquidityETH{value: 1 ether}(
+        (uint amountToken, uint amountETH, uint liquidity) = router.addLiquidityWETH{value: 1 ether}(
             address(tokenA),
             1000 * 10**18,  // amountTokenDesired
             0,  // amountTokenMin
@@ -270,14 +270,14 @@ contract UniswapV2Test is Test {
         vm.stopPrank();
     }
 
-    function testSwapETHForTokens() public {
+    function testSwapWETHForTokens() public {
         // ETH -> 토큰 스왑 테스트
         
         // 1. 먼저 유동성 추가 (ETH + 토큰)
         vm.startPrank(user1);
         tokenA.approve(address(router), type(uint).max);
         
-        (uint amountToken, uint amountETH, uint liquidity) = router.addLiquidityETH{value: 5 ether}(
+        (uint amountToken, uint amountWETH, uint liquidity) = router.addLiquidityWETH{value: 5 ether}(
             address(tokenA),
             5000 * 10**18,
             0, 0, user1, block.timestamp + 3600
@@ -285,7 +285,7 @@ contract UniswapV2Test is Test {
         
         console.log("ETH-Token liquidity added");
         console.log("Initial amounts - Token:", amountToken);
-        console.log("Initial amounts - ETH:", amountETH);
+        console.log("Initial amounts - ETH:", amountWETH);
         console.log("Initial amounts - LP:", liquidity);
         vm.stopPrank();
         
@@ -293,9 +293,9 @@ contract UniswapV2Test is Test {
         vm.startPrank(user2);
         
         // 초기 잔액 확인
-        uint initialETHBalance = user2.balance;
+        uint initialWETHBalance = user2.balance;
         uint initialTokenBalance = tokenA.balanceOf(user2);
-        console.log("User2 initial balance - ETH:", initialETHBalance);
+        console.log("User2 initial balance - ETH:", initialWETHBalance);
         console.log("User2 initial balance - TokenA:", initialTokenBalance);
         
         // ETH에서 토큰으로 스왑 경로 설정
@@ -305,7 +305,7 @@ contract UniswapV2Test is Test {
         
         // 3. ETH -> 토큰 스왑 실행
         uint amountIn = 1 ether;
-        uint[] memory amounts = router.swapExactETHForTokens{value: amountIn}(
+        uint[] memory amounts = router.swapExactWETHForTokens{value: amountIn}(
             0, // 최소 아웃풋 (슬리피지 없음)
             path,
             user2,
@@ -313,17 +313,17 @@ contract UniswapV2Test is Test {
         );
         
         // 최종 잔액 확인
-        uint finalETHBalance = user2.balance;
+        uint finalWETHBalance = user2.balance;
         uint finalTokenBalance = tokenA.balanceOf(user2);
-        console.log("User2 final balance - ETH:", finalETHBalance);
+        console.log("User2 final balance - ETH:", finalWETHBalance);
         console.log("User2 final balance - TokenA:", finalTokenBalance);
         console.log("Swap amounts - ETH in:", amounts[0]);
         console.log("Swap amounts - Token out:", amounts[1]);
         
         // 검증
-        assertTrue(finalETHBalance < initialETHBalance, "ETH not spent");
+        assertTrue(finalWETHBalance < initialWETHBalance, "ETH not spent");
         assertTrue(finalTokenBalance > initialTokenBalance, "Token not received");
-        assertEq(initialETHBalance - finalETHBalance, amountIn, "Incorrect amount of ETH spent");
+        assertEq(initialWETHBalance - finalWETHBalance, amountIn, "Incorrect amount of ETH spent");
         assertEq(finalTokenBalance - initialTokenBalance, amounts[1], "Incorrect amount of tokens received");
         
         vm.stopPrank();
@@ -395,6 +395,64 @@ contract UniswapV2Test is Test {
         assertTrue(finalTokenBBalance > initialTokenBBalance, "TokenB not returned");
         assertEq(finalLPBalance, 0, "Not all LP tokens burned");
         
+        vm.stopPrank();
+    }
+
+    function testSwapWithSlippage() public {
+        // 1. 유동성 추가
+        vm.startPrank(user1);
+        tokenA.approve(address(router), type(uint).max);
+        tokenB.approve(address(router), type(uint).max);
+        router.addLiquidity(
+            address(tokenA),
+            address(tokenB),
+            5000 * 10**18,
+            5000 * 10**18,
+            0, 0, user1, block.timestamp + 3600
+        );
+        vm.stopPrank();
+
+        // 2. 스왑 테스트
+        vm.startPrank(user2);
+        tokenA.approve(address(router), type(uint).max);
+        address[] memory path = new address[](2);
+        path[0] = address(tokenA);
+        path[1] = address(tokenB);
+        uint amountIn = 100 * 10**18;
+        // getAmountsOut으로 예상 수령량 계산
+        uint[] memory amountsOut = router.getAmountsOut(amountIn, path);
+        uint expectedAmountOut = amountsOut[1];
+        console.log("expectedAmountOut:", expectedAmountOut);
+        // 슬리피지 5% 적용
+        uint slippage = 5;
+        uint amountOutMin = expectedAmountOut * (100 - slippage) / 100;
+        console.log("amountOutMin (5% slippage):", amountOutMin);
+        // 정상적으로 스왑이 되는지 확인
+        uint[] memory swapAmounts = router.swapExactTokensForTokens(
+            amountIn,
+            amountOutMin,
+            path,
+            user2,
+            block.timestamp + 3600
+        );
+        console.log("swapAmounts[0] (in):", swapAmounts[0]);
+        console.log("swapAmounts[1] (out):", swapAmounts[1]);
+        // amountOutMin을 너무 높게 잡으면 revert가 나는지 확인
+        uint amountOutMinHigh = expectedAmountOut + 1;
+        console.log("amountOutMin (too high):", amountOutMinHigh);
+        bool reverted = false;
+        try router.swapExactTokensForTokens(
+            amountIn,
+            amountOutMinHigh,
+            path,
+            user2,
+            block.timestamp + 3600
+        ) {
+            // do nothing
+        } catch {
+            reverted = true;
+        }
+        console.log("revert when amountOutMin too high:", reverted);
         vm.stopPrank();
     }
 }

@@ -83,17 +83,17 @@ contract UniswapV2Router {
         address token,
         uint amountTokenDesired,
         uint amountTokenMin,
-        uint amountETHMin,
+        uint amountWETHMin,
         address to,
         uint deadline
-    ) external virtual payable ensure(deadline) returns (uint amountToken, uint amountETH, uint liquidity) {
-        (amountToken, amountETH) = _addLiquidity(
+    ) external virtual payable ensure(deadline) returns (uint amountToken, uint amountWETH, uint liquidity) {
+        (amountToken, amountWETH) = _addLiquidity(
             token,
             WETH,
             amountTokenDesired,
             msg.value,
             amountTokenMin,
-            amountETHMin
+            amountWETHMin
         );
         
         // Factory에서 직접 pair 주소 가져오기
@@ -101,12 +101,12 @@ contract UniswapV2Router {
         require(pair != address(0), "UniswapV2Router: PAIR_NOT_FOUND");
         
         IERC20(token).safeTransferFrom(msg.sender, pair, amountToken);
-        IWETH(WETH).deposit{value: amountETH}();
-        assert(IWETH(WETH).transfer(pair, amountETH));
+        IWETH(WETH).deposit{value: amountWETH}();
+        assert(IWETH(WETH).transfer(pair, amountWETH));
         liquidity = IUniswapV2Pair(pair).mint(to);
         // refund dust eth, if any
-        if (msg.value > amountETH) {
-            Address.sendValue(payable(msg.sender), msg.value - amountETH);
+        if (msg.value > amountWETH) {
+            Address.sendValue(payable(msg.sender), msg.value - amountWETH);
         }
     }
 
@@ -147,22 +147,22 @@ contract UniswapV2Router {
         address token,
         uint liquidity,
         uint amountTokenMin,
-        uint amountETHMin,
+        uint amountWETHMin,
         address to,
         uint deadline
-    ) public virtual ensure(deadline) returns (uint amountToken, uint amountETH) {
-        (amountToken, amountETH) = removeLiquidity(
+    ) public virtual ensure(deadline) returns (uint amountToken, uint amountWETH) {
+        (amountToken, amountWETH) = removeLiquidity(
             token,
             WETH,
             liquidity,
             amountTokenMin,
-            amountETHMin,
+            amountWETHMin,
             address(this),
             deadline
         );
         IERC20(token).safeTransfer(to, amountToken);
-        IWETH(WETH).withdraw(amountETH);
-        Address.sendValue(payable(to), amountETH);
+        IWETH(WETH).withdraw(amountWETH);
+        Address.sendValue(payable(to), amountWETH);
     }
 
     // **** SWAP ****

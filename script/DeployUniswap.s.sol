@@ -31,14 +31,14 @@ contract DeployUniswap is Script {
         tokenA.mint(msg.sender, 10_000 * 10**18);
         console.log("Token A deployed at:", address(tokenA));
         tokenA.transfer(address(testaddr), 100 * 10**18);
-        console.log("Token A transferred to testaddr");
+        console.log("Token A transferred to testaddr", tokenA.balanceOf(testaddr));
         console.log("Token A balance:", tokenA.balanceOf(msg.sender));
 
         TestToken tokenB = new TestToken("Token B", "TKNB", 1_000_000);
         tokenB.mint(msg.sender, 10_000 * 10**18);
         console.log("Token B deployed at:", address(tokenB));
         tokenB.transfer(address(testaddr), 100 * 10**18);
-        console.log("Token B transferred to testaddr");
+        console.log("Token B transferred to testaddr", tokenB.balanceOf(testaddr));
         console.log("Token B balance:", tokenB.balanceOf(msg.sender));
 
         // Create initial pair and add liquidity

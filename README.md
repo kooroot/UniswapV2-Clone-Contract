@@ -13,6 +13,15 @@ Foundry consists of:
 
 https://book.getfoundry.sh/
 
+## Installation
+
+First, install the required dependencies:
+
+```shell
+$ forge install OpenZeppelin/openzeppelin-contracts
+$ forge install foundry-rs/forge-std
+```
+
 ## Usage
 
 ### Build
